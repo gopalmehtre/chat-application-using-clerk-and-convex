@@ -13,12 +13,14 @@ interface MessageBubbleProps {
   message: any;
   isOwn: boolean;
   currentUserId?: Id<"users">;
+  isGroup?: boolean;
 }
 
 export default function MessageBubble({
   message,
   isOwn,
   currentUserId,
+  isGroup,
 }: MessageBubbleProps) {
   const [showActions, setShowActions] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -65,14 +67,16 @@ export default function MessageBubble({
     >
       {/* Avatar for other user */}
       {!isOwn && message.sender && (
-        <img
-          src={
-            message.sender.imageUrl ??
-            `https://api.dicebear.com/7.x/initials/svg?seed=${message.sender.name}`
-          }
-          alt={message.sender.name}
-          className="w-7 h-7 rounded-full mr-2 self-end flex-shrink-0"
-        />
+        <div className="flex flex-col mr-2 items-center self-end flex-shrink-0">
+          <img
+            src={
+              message.sender.imageUrl ??
+              `https://api.dicebear.com/7.x/initials/svg?seed=${message.sender.name}`
+            }
+            alt={message.sender.name}
+            className="w-7 h-7 rounded-full"
+          />
+        </div>
       )}
 
       {/* Action buttons — SIDE of message (left for own, right for other) */}
@@ -108,7 +112,11 @@ export default function MessageBubble({
         </div>
       )}
 
-      <div className={cn("max-w-[70%]", isOwn && "items-end flex flex-col")}>
+      <div className={cn("max-w-[70%] relative", isOwn && "items-end flex flex-col")}>
+        {/* Show sender name in group chats */}
+        {!isOwn && isGroup && message.sender && (
+          <p className="text-xs text-indigo-400 mb-1 px-1">{message.sender.name}</p>
+        )}
         {/* Message bubble */}
         <div
           className={cn(

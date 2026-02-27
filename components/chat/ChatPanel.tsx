@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { ArrowLeft, Send, ChevronDown } from "lucide-react";
+import { ArrowLeft, Send, ChevronDown, Users } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import MessageBubble from "./MessageBubble";
 import TypingIndicator from "./TypingIndicator";
@@ -181,28 +181,44 @@ export default function ChatPanel({ conversationId, onBack }: ChatPanelProps) {
                 <button onClick={onBack} className="md:hidden p-1 hover:bg-gray-700 rounded">
                     <ArrowLeft size={20} />
                 </button>
-                {otherUser && (
+                {conversation?.isGroup ? (
+                    // Group header
                     <>
-                        <div className="relative">
-                            <img
-                                src={
-                                    otherUser.imageUrl ??
-                                    `https://api.dicebear.com/7.x/initials/svg?seed=${otherUser.name}`
-                                }
-                                alt={otherUser.name}
-                                className="w-9 h-9 rounded-full object-cover"
-                            />
-                            {otherUser.isOnline && (
-                                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-gray-900" />
-                            )}
+                        <div className="w-9 h-9 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
+                            <Users size={16} className="text-indigo-400" />
                         </div>
                         <div>
-                            <p className="font-semibold text-sm">{otherUser.name}</p>
+                            <p className="font-semibold text-sm">{conversation.groupName}</p>
                             <p className="text-xs text-gray-400">
-                                {otherUser.isOnline ? "Online" : "Offline"}
+                                {conversation.participants?.length} members
                             </p>
                         </div>
                     </>
+                ) : (
+                    // Direct message header
+                    otherUser && (
+                        <>
+                            <div className="relative">
+                                <img
+                                    src={
+                                        otherUser.imageUrl ??
+                                        `https://api.dicebear.com/7.x/initials/svg?seed=${otherUser.name}`
+                                    }
+                                    alt={otherUser.name}
+                                    className="w-9 h-9 rounded-full object-cover"
+                                />
+                                {otherUser.isOnline && (
+                                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-gray-900" />
+                                )}
+                            </div>
+                            <div>
+                                <p className="font-semibold text-sm">{otherUser.name}</p>
+                                <p className="text-xs text-gray-400">
+                                    {otherUser.isOnline ? "Online" : "Offline"}
+                                </p>
+                            </div>
+                        </>
+                    )
                 )}
             </div>
 
@@ -229,6 +245,7 @@ export default function ChatPanel({ conversationId, onBack }: ChatPanelProps) {
                             message={msg}
                             isOwn={msg.senderId === currentUser?._id}
                             currentUserId={currentUser?._id}
+                            isGroup={conversation?.isGroup}
                         />
                     ))
                 )}

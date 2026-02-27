@@ -5,11 +5,12 @@ import { useQuery, useMutation } from "convex/react";
 import { useUser } from "@clerk/nextjs";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { Search, MessageSquarePlus, LogOut } from "lucide-react";
+import { Search, MessageSquarePlus, LogOut, Users } from "lucide-react";
 import { useClerk } from "@clerk/nextjs";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import ConversationItem from "./ConversationItem";
 import UserItem from "./UserItem";
+import CreateGroupModal from "./CreateGroupModal";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -23,6 +24,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const [search, setSearch] = useState("");
   const [showUsers, setShowUsers] = useState(false);
+  const [showGroupModal, setShowGroupModal] = useState(false); // NEW
 
   const { user } = useUser();
   const { signOut } = useClerk();
@@ -57,6 +59,10 @@ export default function Sidebar({
     setSearch("");
   };
 
+  const handleGroupCreated = (id: Id<"conversations">) => {
+    onSelectConversation(id);
+  };
+
   return (
     <div className="flex flex-col h-full bg-gray-900 w-full">
       {/* Header */}
@@ -72,20 +78,33 @@ export default function Sidebar({
             )}
             <span className="font-semibold text-sm">{currentUser?.name}</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1">
+            {/* New direct message */}
             <button
-              onClick={() => setShowUsers((p) => !p)}
-              className="p-2 hover:bg-gray-700 rounded-lg transition"
+              onClick={() => { setShowUsers((p) => !p); setSearch(""); }}
+              className={cn(
+                "p-2 hover:bg-gray-700 rounded-lg transition",
+                showUsers && "bg-gray-700"
+              )}
               title="New conversation"
             >
-              <MessageSquarePlus size={18} />
+              <MessageSquarePlus size={17} />
             </button>
+            {/* New group */}
+            <button
+              onClick={() => setShowGroupModal(true)}
+              className="p-2 hover:bg-gray-700 rounded-lg transition"
+              title="New group"
+            >
+              <Users size={17} />
+            </button>
+            {/* Sign out */}
             <button
               onClick={() => signOut()}
               className="p-2 hover:bg-gray-700 rounded-lg transition"
               title="Sign out"
             >
-              <LogOut size={18} />
+              <LogOut size={17} />
             </button>
           </div>
         </div>
@@ -93,7 +112,7 @@ export default function Sidebar({
         {/* Search */}
         <div className="relative">
           <Search
-            size={14}
+            size={13}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
           />
           <input
@@ -109,7 +128,6 @@ export default function Sidebar({
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         {showUsers ? (
-          // User list for new conversation
           <div>
             <p className="text-xs text-gray-500 px-4 pt-3 pb-1 uppercase tracking-wider">
               All Users
@@ -120,15 +138,17 @@ export default function Sidebar({
               </p>
             ) : (
               filteredUsers?.map((u) => (
-                <UserItem key={u._id} user={u} onClick={() => handleUserClick(u._id)} />
+                <UserItem
+                  key={u._id}
+                  user={u}
+                  onClick={() => handleUserClick(u._id)}
+                />
               ))
             )}
           </div>
         ) : (
-          // Conversations list
           <div>
             {conversations === undefined ? (
-              // Loading skeletons
               Array.from({ length: 4 }).map((_, i) => (
                 <ConversationSkeleton key={i} />
               ))
@@ -137,7 +157,7 @@ export default function Sidebar({
                 <div className="text-4xl mb-3">👋</div>
                 <p className="text-sm">No conversations yet</p>
                 <p className="text-xs mt-1 text-gray-600">
-                  Click + to start chatting
+                  Click + to start chatting or create a group
                 </p>
               </div>
             ) : (
@@ -154,6 +174,14 @@ export default function Sidebar({
           </div>
         )}
       </div>
+
+      {/* Group Modal */}
+      {showGroupModal && (
+        <CreateGroupModal
+          onClose={() => setShowGroupModal(false)}
+          onGroupCreated={handleGroupCreated}
+        />
+      )}
     </div>
   );
 }

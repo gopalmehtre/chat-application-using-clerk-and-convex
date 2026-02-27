@@ -17,6 +17,7 @@ export default defineSchema({
     participants: v.array(v.id("users")),  // array of user _ids
     isGroup: v.boolean(),
     groupName: v.optional(v.string()),
+    groupImage: v.optional(v.string()),
     lastMessageId: v.optional(v.id("messages")),
     updatedAt: v.number(),
   }).index("by_updatedAt", ["updatedAt"]),

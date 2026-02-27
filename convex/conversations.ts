@@ -31,6 +31,31 @@ export const getOrCreateConversation = mutation({
   },
 });
 
+// ADD THIS — Create a group conversation
+export const createGroupConversation = mutation({
+  args: {
+    currentUserId: v.id("users"),
+    memberIds: v.array(v.id("users")),
+    groupName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    if (args.memberIds.length < 2) {
+      throw new Error("Group must have at least 2 other members");
+    }
+
+    const allParticipants = [args.currentUserId, ...args.memberIds];
+
+    const conversationId = await ctx.db.insert("conversations", {
+      participants: allParticipants,
+      isGroup: true,
+      groupName: args.groupName,
+      updatedAt: Date.now(),
+    });
+
+    return conversationId;
+  },
+});
+
 // Get all conversations for a user
 export const getUserConversations = query({
   args: { userId: v.id("users") },
