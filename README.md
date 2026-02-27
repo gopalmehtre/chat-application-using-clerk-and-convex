@@ -84,3 +84,7 @@ The Convex backend can be pushed to a specialized production environment using:
 npx convex deploy
 ```
 *Note: Make sure to map your new production Convex URL (`NEXT_PUBLIC_CONVEX_URL`) and your production Clerk API Keys in your Vercel Environment Variables.*
+
+## Author
+
+- Gopal Mehtre.
